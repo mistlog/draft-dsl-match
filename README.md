@@ -6,6 +6,7 @@ DSL Match is used in typedraft to add limited support for pattern match in types
 
 In pattern match context, we use arrow function to denote pattern and only arrow function is allowed in a local context.
 
+### single value
 Currently, only number, string and enum are supported, for example:
 
 ```typescript
@@ -61,6 +62,17 @@ export function Main() {
 }
 ```
 
+### or
+
+```typescript
+function Test(value: any) {
+    "use match";
+    (value: "a" | "b") => {
+
+    }
+}
+```
+
 See it in action with typedraft playground: https://mistlog.github.io/typedraft-playground/.
 
 ## Roadmap
@@ -75,17 +87,6 @@ class Sample { }
 function Test(value: any) {
     "use match";
     (value: Sample) => {
-
-    }
-}
-```
-
-### or
-
-```typescript
-function Test(value: any) {
-    "use match";
-    (value: "a" | "b") => {
 
     }
 }
