@@ -142,7 +142,7 @@ describe("test dsl match", () =>
     {
         //
         const code = `
-            function Test(value:string){
+            function Test(value:any){
                 'use match';
 
                 (value: "a" | "b") =>
@@ -154,11 +154,16 @@ describe("test dsl match", () =>
                 {
                     console.log("number");
                 }
+
+                (value: Event.A | Event.B) => 
+                {
+                    console.log("enum");
+                }
             }
         `;
 
         SnapshotTest(code);
-        
+
     })
 })
 

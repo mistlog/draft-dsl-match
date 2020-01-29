@@ -58,8 +58,14 @@ function BuildCurrentIf(expression: ArrowFunctionExpression) {
         /**
          * or
          */
-        const types = annotation.types as Array<TSLiteralType>;
-        const patterns = types.map(each => (each.literal as Literal).extra.raw);
+        const types = annotation.types;
+        const patterns = types.map(each => {
+            if (each.type === "TSLiteralType") {
+                return (each.literal as Literal).extra.raw;
+            } else if (each.type === "TSTypeReference") {
+                return ToString(each);
+            }
+        });
         const fragments = patterns.map(each => `${to_match}===${each}`);
         const condition = fragments.join("||");
         current = ToAst(`if(${condition}){}`) as IfStatement;
