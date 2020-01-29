@@ -52,7 +52,7 @@ function BuildCurrentIf(expression: ArrowFunctionExpression) {
          */
         current = ToAst(`if(${to_match}===${ToString(annotation)}){}`) as IfStatement;
     }
-    current.consequent = expression.body as BlockStatement;
+    current.consequent = expression.body.type === "BlockStatement" ? (expression.body as BlockStatement) : blockStatement([expressionStatement(expression.body)]);
 }
 ```
 
@@ -68,7 +68,7 @@ function MoveToNext(head: IfStatement, current: IfStatement, tail: IfStatement) 
 
 ```typescript
 function HandleDefaultCase(expression: ArrowFunctionExpression, tail: IfStatement) {
-    tail.alternate = expression.body as BlockStatement;
+    tail.alternate = expression.body.type === "BlockStatement" ? (expression.body as BlockStatement) : blockStatement([expressionStatement(expression.body)]);
 }
 ```
 

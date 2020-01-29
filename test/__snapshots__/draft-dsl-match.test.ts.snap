@@ -41,3 +41,13 @@ exports[`test dsl match dsl.match.string 1`] = `
   }
 }"
 `;
+
+exports[`test dsl match dsl.match: return block statement 1`] = `
+"function Test(value: number) {
+  if (value === 1) {
+    console.log(1);
+  } else {
+    <HandleSomething />;
+  }
+}"
+`;

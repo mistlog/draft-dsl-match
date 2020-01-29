@@ -1,4 +1,4 @@
-import { Identifier, TypeAnnotation, isTSLiteralType, IfStatement, BlockStatement, StringLiteral, NumberLiteral, isTSTypeReference, ArrowFunctionExpression, ExpressionStatement } from "@babel/types";
+import { expressionStatement, blockStatement, Identifier, TypeAnnotation, isTSLiteralType, IfStatement, BlockStatement, StringLiteral, NumberLiteral, isTSTypeReference, ArrowFunctionExpression, ExpressionStatement } from "@babel/types";
 import { ToAst, ToString } from "typedraft";
 
 export class PatternMatch
@@ -70,7 +70,9 @@ function BuildCurrentIf(expression: ArrowFunctionExpression)
         current = ToAst(`if(${to_match}===${ToString(annotation)}){}`) as IfStatement;
     }
 
-    current.consequent = expression.body as BlockStatement;
+    current.consequent = expression.body.type === "BlockStatement" ?
+        expression.body as BlockStatement :
+        blockStatement([expressionStatement(expression.body)]);
 }
 
 function MoveToNext(head: IfStatement, current: IfStatement, tail: IfStatement)
@@ -89,7 +91,10 @@ function MoveToNext(head: IfStatement, current: IfStatement, tail: IfStatement)
 
 function HandleDefaultCase(expression: ArrowFunctionExpression, tail: IfStatement)
 {
-    tail.alternate = expression.body as BlockStatement;
+
+    tail.alternate = expression.body.type === "BlockStatement" ?
+        expression.body as BlockStatement :
+        blockStatement([expressionStatement(expression.body)]);
 }
 
 /*

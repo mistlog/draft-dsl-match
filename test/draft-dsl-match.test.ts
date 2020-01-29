@@ -124,4 +124,22 @@ describe("test dsl match", () =>
         context.Resolve(new PatternMatch());
         expect(ToString(context.m_Code)).toMatchSnapshot();
     })
+
+    test("dsl.match: return block statement", () =>
+    {
+        //
+        const code = `
+            function Test(value:number){
+                'use match';
+
+                (value: 1) => console.log(1);
+            
+                () => <HandleSomething/>;
+            }
+        `;
+
+        const context = new LocalContext(ToAst(code) as FunctionDeclaration);
+        context.Resolve(new PatternMatch());
+        expect(ToString(context.m_Code)).toMatchSnapshot();
+    })
 })
