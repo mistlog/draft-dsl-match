@@ -32,6 +32,16 @@ exports[`test dsl match dsl.match.number 1`] = `
 }"
 `;
 
+exports[`test dsl match dsl.match.or 1`] = `
+"function Test(value: string) {
+  if (value === \\"a\\" || value === \\"b\\") {
+    console.log(\\"string\\");
+  } else if (value === 1 || value === 2) {
+    console.log(\\"number\\");
+  }
+}"
+`;
+
 exports[`test dsl match dsl.match.string 1`] = `
 "function Test(value: string) {
   if (value === \\"a\\") {
