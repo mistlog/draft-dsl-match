@@ -31,6 +31,10 @@ function TranscribeExpressionToIf(expression: ArrowFunctionExpression, head: IfS
 ```
 
 ```typescript
+type Literal = (StringLiteral | NumberLiteral) & { extra: { raw: string } };
+```
+
+```typescript
 function BuildCurrentIf(expression: ArrowFunctionExpression) {
     //
     const [pattern_info] = expression.params as [Identifier];
@@ -43,7 +47,6 @@ function BuildCurrentIf(expression: ArrowFunctionExpression) {
         /**
          * number or string
          */
-        type Literal = (StringLiteral | NumberLiteral) & { extra: { raw: string } };
         const pattern = (annotation.literal as Literal).extra.raw;
         current = ToAst(`if(${to_match}===${pattern}){}`) as IfStatement;
     } else if (isTSTypeReference(annotation)) {
@@ -51,8 +54,23 @@ function BuildCurrentIf(expression: ArrowFunctionExpression) {
          * enum
          */
         current = ToAst(`if(${to_match}===${ToString(annotation)}){}`) as IfStatement;
+    } else if (isTSUnionType(annotation)) {
+        /**
+         * or
+         */
+        const types = annotation.types;
+        const patterns = types.map(each => {
+            if (each.type === "TSLiteralType") {
+                return (each.literal as Literal).extra.raw;
+            } else if (each.type === "TSTypeReference") {
+                return ToString(each);
+            }
+        });
+        const fragments = patterns.map(each => `${to_match}===${each}`);
+        const condition = fragments.join("||");
+        current = ToAst(`if(${condition}){}`) as IfStatement;
     }
-    current.consequent = expression.body as BlockStatement;
+    current.consequent = expression.body.type === "BlockStatement" ? (expression.body as BlockStatement) : blockStatement([expressionStatement(expression.body)]);
 }
 ```
 
@@ -68,7 +86,7 @@ function MoveToNext(head: IfStatement, current: IfStatement, tail: IfStatement) 
 
 ```typescript
 function HandleDefaultCase(expression: ArrowFunctionExpression, tail: IfStatement) {
-    tail.alternate = expression.body as BlockStatement;
+    tail.alternate = expression.body.type === "BlockStatement" ? (expression.body as BlockStatement) : blockStatement([expressionStatement(expression.body)]);
 }
 ```
 

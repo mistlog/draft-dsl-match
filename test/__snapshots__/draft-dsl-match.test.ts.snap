@@ -32,12 +32,34 @@ exports[`test dsl match dsl.match.number 1`] = `
 }"
 `;
 
+exports[`test dsl match dsl.match.or 1`] = `
+"function Test(value: any) {
+  if (value === \\"a\\" || value === \\"b\\") {
+    console.log(\\"string\\");
+  } else if (value === 1 || value === 2) {
+    console.log(\\"number\\");
+  } else if (value === Event.A || value === Event.B) {
+    console.log(\\"enum\\");
+  }
+}"
+`;
+
 exports[`test dsl match dsl.match.string 1`] = `
 "function Test(value: string) {
   if (value === \\"a\\") {
     console.log(\\"a\\");
   } else if (value === \\"b\\") {
     console.log(\\"b\\");
+  }
+}"
+`;
+
+exports[`test dsl match dsl.match: return block statement 1`] = `
+"function Test(value: number) {
+  if (value === 1) {
+    console.log(1);
+  } else {
+    <HandleSomething />;
   }
 }"
 `;

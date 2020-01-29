@@ -28,9 +28,8 @@ describe("test dsl match", () =>
             }
         `;
 
-        const context = new LocalContext(ToAst(code) as FunctionDeclaration);
-        context.Resolve(new PatternMatch());
-        expect(ToString(context.m_Code)).toMatchSnapshot();
+        SnapshotTest(code);
+
     })
 
     test("dsl.match.string", () =>
@@ -52,9 +51,8 @@ describe("test dsl match", () =>
             }
         `;
 
-        const context = new LocalContext(ToAst(code) as FunctionDeclaration);
-        context.Resolve(new PatternMatch());
-        expect(ToString(context.m_Code)).toMatchSnapshot();
+        SnapshotTest(code);
+
 
     })
 
@@ -77,9 +75,8 @@ describe("test dsl match", () =>
             }
         `;
 
-        const context = new LocalContext(ToAst(code) as FunctionDeclaration);
-        context.Resolve(new PatternMatch());
-        expect(ToString(context.m_Code)).toMatchSnapshot();
+        SnapshotTest(code);
+
 
     })
 
@@ -120,8 +117,59 @@ describe("test dsl match", () =>
             }
         `;
 
-        const context = new LocalContext(ToAst(code) as FunctionDeclaration);
-        context.Resolve(new PatternMatch());
-        expect(ToString(context.m_Code)).toMatchSnapshot();
+        SnapshotTest(code);
+
+    })
+
+    test("dsl.match: return block statement", () =>
+    {
+        //
+        const code = `
+            function Test(value:number){
+                'use match';
+
+                (value: 1) => console.log(1);
+            
+                () => <HandleSomething/>;
+            }
+        `;
+
+        SnapshotTest(code);
+
+    })
+
+    test("dsl.match.or", () =>
+    {
+        //
+        const code = `
+            function Test(value:any){
+                'use match';
+
+                (value: "a" | "b") =>
+                {
+                    console.log("string");
+                }
+
+                (value: 1 | 2) =>
+                {
+                    console.log("number");
+                }
+
+                (value: Event.A | Event.B) => 
+                {
+                    console.log("enum");
+                }
+            }
+        `;
+
+        SnapshotTest(code);
+
     })
 })
+
+function SnapshotTest(code: string)
+{
+    const context = new LocalContext(ToAst(code) as FunctionDeclaration);
+    context.Resolve(new PatternMatch());
+    expect(ToString(context.m_Code)).toMatchSnapshot();
+}
