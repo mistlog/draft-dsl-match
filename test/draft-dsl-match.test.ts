@@ -28,8 +28,7 @@ describe("test dsl match", () => {
         `;
 
         SnapshotTest(code);
-
-    })
+    });
 
     test("dsl.match.string", () => {
         //
@@ -50,9 +49,7 @@ describe("test dsl match", () => {
         `;
 
         SnapshotTest(code);
-
-
-    })
+    });
 
     test("dsl.match.enum", () => {
         //
@@ -73,9 +70,7 @@ describe("test dsl match", () => {
         `;
 
         SnapshotTest(code);
-
-
-    })
+    });
 
     test("dsl.match.instanceof", () => {
         //
@@ -96,7 +91,7 @@ describe("test dsl match", () => {
         `;
 
         SnapshotTest(code);
-    })
+    });
 
     test("dsl.match.only-default: only default is not allowed", () => {
         //
@@ -112,8 +107,10 @@ describe("test dsl match", () => {
         `;
 
         const context = new LocalContext(ToBinding(code));
-        expect(() => context.Resolve(new PatternMatch())).toThrowError("Cannot set property 'alternate' of null");
-    })
+        expect(() => context.Resolve(new PatternMatch())).toThrowError(
+            "Cannot set property 'alternate' of null"
+        );
+    });
 
     test("dsl.match.default", () => {
         //
@@ -134,8 +131,7 @@ describe("test dsl match", () => {
         `;
 
         SnapshotTest(code);
-
-    })
+    });
 
     test("dsl.match: return block statement", () => {
         //
@@ -150,8 +146,7 @@ describe("test dsl match", () => {
         `;
 
         SnapshotTest(code);
-
-    })
+    });
 
     test("dsl.match.or", () => {
         //
@@ -177,8 +172,7 @@ describe("test dsl match", () => {
         `;
 
         SnapshotTest(code);
-
-    })
+    });
 
     test("dsl.match.inline-context", () => {
         const code = `
@@ -198,7 +192,7 @@ describe("test dsl match", () => {
         const context = new InlineContext(ToNodePath(code));
         context.Resolve(new PatternMatch());
         expect(ToString(context.m_Code)).toMatchSnapshot();
-    })
+    });
 
     test("dsl.match.inline-context: merge", () => {
         const code = `
@@ -215,12 +209,15 @@ describe("test dsl match", () => {
             }
         `;
 
-
-        // ToNodePath returns path without container, key, etc... 
+        // ToNodePath returns path without container, key, etc...
         // however, they will be used in merge(path.replaceWithMultiple)
         // so we will get real path by traverse:
         let program_path: NodePath<Program> = null;
-        traverse(ToFile(code), { Program(path) { program_path = path; } });
+        traverse(ToFile(code), {
+            Program(path) {
+                program_path = path;
+            },
+        });
         const [path] = program_path.get("body") as [NodePath<BlockStatement>];
 
         const context = new InlineContext(path);
@@ -229,7 +226,7 @@ describe("test dsl match", () => {
         // path will be invalid after merge, that's fine in typedraft due to RefreshDraftPlugin
         // so we use program_path.node to check the transcribed code:
         expect(ToString(program_path.node)).toMatchSnapshot();
-    })
+    });
 });
 
 function SnapshotTest(code: string) {
