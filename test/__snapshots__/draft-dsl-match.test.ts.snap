@@ -38,6 +38,16 @@ exports[`test dsl match dsl.match.inline-context: merge 1`] = `
 }"
 `;
 
+exports[`test dsl match dsl.match.instanceof 1`] = `
+"function Test(value: ClassA | ClassB) {
+  if (value instanceof ClassA) {
+    console.log(\\"class A\\");
+  } else if (value instanceof ClassB) {
+    console.log(\\"class B\\");
+  }
+}"
+`;
+
 exports[`test dsl match dsl.match.number 1`] = `
 "function Test(value: number) {
   if (value === 1) {

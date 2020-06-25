@@ -77,6 +77,27 @@ describe("test dsl match", () => {
 
     })
 
+    test("dsl.match.instanceof", () => {
+        //
+        const code = `
+            function Test(value:ClassA | ClassB){
+                'use match';
+
+                (value: ClassA) =>
+                {
+                    console.log("class A");
+                }
+            
+                (value: ClassB) =>
+                {
+                    console.log("class B");
+                }
+            }
+        `;
+
+        SnapshotTest(code);
+    })
+
     test("dsl.match.only-default: only default is not allowed", () => {
         //
         const code = `
