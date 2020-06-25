@@ -1,6 +1,6 @@
 {
     "name": "draft-dsl-match",
-    "version": "0.0.3",
+    "version": "0.1.0",
     "description": "pattern match DSL for typedraft",
     "author": "mistlog",
     "license": "MIT",
@@ -40,7 +40,7 @@
         "clean:dist": "ts-node ./script/clean-dist.ts"
     },
     "dependencies": {
-        "typedraft": "^0.2.0"
+        "typedraft": "0.2.0"
     },
     "devDependencies": {
         "@types/jest": "^24.0.18",
