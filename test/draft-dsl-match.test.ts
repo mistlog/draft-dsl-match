@@ -1,11 +1,10 @@
-import { LocalContext, ToAst, ToString } from "typedraft";
-import { FunctionDeclaration } from "@babel/types";
+import { LocalContext, ToString, ToBinding, InlineContext, ToNodePath, ToFile } from "typedraft";
+import { BlockStatement, Program } from "@babel/types";
+import traverse, { NodePath } from "@babel/traverse";
 import { PatternMatch } from "../src/draft-dsl-match";
 
-describe("test dsl match", () =>
-{
-    test("dsl.match.number", () =>
-    {
+describe("test dsl match", () => {
+    test("dsl.match.number", () => {
         //
         const code = `
             function Test(value:number){
@@ -29,11 +28,9 @@ describe("test dsl match", () =>
         `;
 
         SnapshotTest(code);
+    });
 
-    })
-
-    test("dsl.match.string", () =>
-    {
+    test("dsl.match.string", () => {
         //
         const code = `
             function Test(value:string){
@@ -52,12 +49,9 @@ describe("test dsl match", () =>
         `;
 
         SnapshotTest(code);
+    });
 
-
-    })
-
-    test("dsl.match.enum", () =>
-    {
+    test("dsl.match.enum", () => {
         //
         const code = `
             function Test(value:Event){
@@ -76,12 +70,30 @@ describe("test dsl match", () =>
         `;
 
         SnapshotTest(code);
+    });
 
+    test("dsl.match.instanceof", () => {
+        //
+        const code = `
+            function Test(value:ClassA | ClassB){
+                'use match';
 
-    })
+                (value: ClassA) =>
+                {
+                    console.log("class A");
+                }
+            
+                (value: ClassB) =>
+                {
+                    console.log("class B");
+                }
+            }
+        `;
 
-    test("dsl.match.only-default: only default is not allowed", () =>
-    {
+        SnapshotTest(code);
+    });
+
+    test("dsl.match.only-default: only default is not allowed", () => {
         //
         const code = `
             function Test(value:number){
@@ -94,12 +106,13 @@ describe("test dsl match", () =>
             }
         `;
 
-        const context = new LocalContext(ToAst(code) as FunctionDeclaration);
-        expect(() => context.Resolve(new PatternMatch())).toThrowError();
-    })
+        const context = new LocalContext(ToBinding(code));
+        expect(() => context.Resolve(new PatternMatch())).toThrowError(
+            "Cannot set property 'alternate' of null"
+        );
+    });
 
-    test("dsl.match.default", () =>
-    {
+    test("dsl.match.default", () => {
         //
         const code = `
             function Test(value:number){
@@ -118,11 +131,9 @@ describe("test dsl match", () =>
         `;
 
         SnapshotTest(code);
+    });
 
-    })
-
-    test("dsl.match: return block statement", () =>
-    {
+    test("dsl.match: return block statement", () => {
         //
         const code = `
             function Test(value:number){
@@ -135,11 +146,9 @@ describe("test dsl match", () =>
         `;
 
         SnapshotTest(code);
+    });
 
-    })
-
-    test("dsl.match.or", () =>
-    {
+    test("dsl.match.or", () => {
         //
         const code = `
             function Test(value:any){
@@ -163,13 +172,65 @@ describe("test dsl match", () =>
         `;
 
         SnapshotTest(code);
+    });
 
-    })
-})
+    test("dsl.match.inline-context", () => {
+        const code = `
+            {
+                'use match';
 
-function SnapshotTest(code: string)
-{
-    const context = new LocalContext(ToAst(code) as FunctionDeclaration);
+                (value: "a" | "b") => {
+                    console.log("string");
+                }
+
+                (value: 1 | 2) => {
+                    console.log("number");
+                }
+            }
+        `;
+
+        const context = new InlineContext(ToNodePath(code));
+        context.Resolve(new PatternMatch());
+        expect(ToString(context.m_Code)).toMatchSnapshot();
+    });
+
+    test("dsl.match.inline-context: merge", () => {
+        const code = `
+            {
+                'use match';
+
+                (value: "a" | "b") => {
+                    console.log("string");
+                }
+
+                (value: 1 | 2) => {
+                    console.log("number");
+                }
+            }
+        `;
+
+        // ToNodePath returns path without container, key, etc...
+        // however, they will be used in merge(path.replaceWithMultiple)
+        // so we will get real path by traverse:
+        let program_path: NodePath<Program> = null;
+        traverse(ToFile(code), {
+            Program(path) {
+                program_path = path;
+            },
+        });
+        const [path] = program_path.get("body") as [NodePath<BlockStatement>];
+
+        const context = new InlineContext(path);
+        context.Resolve(new PatternMatch(true));
+
+        // path will be invalid after merge, that's fine in typedraft due to RefreshDraftPlugin
+        // so we use program_path.node to check the transcribed code:
+        expect(ToString(program_path.node)).toMatchSnapshot();
+    });
+});
+
+function SnapshotTest(code: string) {
+    const context = new LocalContext(ToBinding(code));
     context.Resolve(new PatternMatch());
     expect(ToString(context.m_Code)).toMatchSnapshot();
 }
