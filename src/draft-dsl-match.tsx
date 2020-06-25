@@ -1,4 +1,21 @@
-import { isTSUnionType, expressionStatement, blockStatement, Identifier, TypeAnnotation, isTSLiteralType, IfStatement, BlockStatement, StringLiteral, NumberLiteral, isTSTypeReference, ArrowFunctionExpression, ExpressionStatement, isStringLiteral, isTSQualifiedName, isIdentifier } from "@babel/types";
+import {
+    isTSUnionType,
+    expressionStatement,
+    blockStatement,
+    Identifier,
+    TypeAnnotation,
+    isTSLiteralType,
+    IfStatement,
+    BlockStatement,
+    StringLiteral,
+    NumberLiteral,
+    isTSTypeReference,
+    ArrowFunctionExpression,
+    ExpressionStatement,
+    isStringLiteral,
+    isTSQualifiedName,
+    isIdentifier,
+} from "@babel/types";
 import { ToAst, ToString } from "typedraft";
 
 export class PatternMatch {
@@ -10,35 +27,39 @@ export class PatternMatch {
 }
 
 //@ts-ignore
-<PatternMatch /> + function Transcribe(block: Array<ExpressionStatement>): [IfStatement] {
-    let tail: IfStatement = null;
-    let head: IfStatement = null;
+<PatternMatch /> +
+    function Transcribe(block: Array<ExpressionStatement>): [IfStatement] {
+        let tail: IfStatement = null;
+        let head: IfStatement = null;
 
-    // if we are in inline context, remove "use match"
-    const [first] = block;
-    if (first && isStringLiteral(first.expression)) {
-        block = block.slice(1);
-    }
+        // if we are in inline context, remove "use match"
+        const [first] = block;
+        if (first && isStringLiteral(first.expression)) {
+            block = block.slice(1);
+        }
 
-    block.forEach(each => {
-        const expression = each.expression as ArrowFunctionExpression;
+        block.forEach(each => {
+            const expression = each.expression as ArrowFunctionExpression;
 
-        //@ts-ignore
-        <TranscribeExpressionToIf />;
-    })
+            //@ts-ignore
+            <TranscribeExpressionToIf />;
+        });
 
-    /**
-     * transcribed is the "head"(first) of if statement
-     */
-    return [head];
-}
+        /**
+         * transcribed is the "head"(first) of if statement
+         */
+        return [head];
+    };
 
-function TranscribeExpressionToIf(expression: ArrowFunctionExpression, head: IfStatement, tail: IfStatement) {
+function TranscribeExpressionToIf(
+    expression: ArrowFunctionExpression,
+    head: IfStatement,
+    tail: IfStatement
+) {
     if (expression.params.length === 0) {
         //@ts-ignore
-        <HandleDefaultCase />
-    }
-    else {
+        <HandleDefaultCase />;
+    } else {
         //@ts-ignore
         <BuildCurrentIf />;
 
@@ -64,8 +85,7 @@ function BuildCurrentIf(expression: ArrowFunctionExpression) {
          */
         const pattern = (annotation.literal as Literal).extra.raw;
         current = ToAst(`if(${to_match}===${pattern}){}`) as IfStatement;
-    }
-    else if (isTSTypeReference(annotation)) {
+    } else if (isTSTypeReference(annotation)) {
         /**
          * enum, instanceof
          */
@@ -77,18 +97,15 @@ function BuildCurrentIf(expression: ArrowFunctionExpression) {
             operator = "instanceof";
         }
         current = ToAst(`if(${to_match} ${operator} ${ToString(annotation)}){}`) as IfStatement;
-
-    }
-    else if (isTSUnionType(annotation)) {
+    } else if (isTSUnionType(annotation)) {
         /**
          * or
          */
         const types = annotation.types;
         const patterns = types.map(each => {
             if (each.type === "TSLiteralType") {
-                return (each.literal as Literal).extra.raw
-            }
-            else if (each.type === "TSTypeReference") {
+                return (each.literal as Literal).extra.raw;
+            } else if (each.type === "TSTypeReference") {
                 return ToString(each);
             }
         });
@@ -97,24 +114,23 @@ function BuildCurrentIf(expression: ArrowFunctionExpression) {
         current = ToAst(`if(${condition}){}`) as IfStatement;
     }
 
-    current.consequent = expression.body.type === "BlockStatement" ?
-        expression.body as BlockStatement :
-        blockStatement([expressionStatement(expression.body)]);
+    current.consequent =
+        expression.body.type === "BlockStatement"
+            ? (expression.body as BlockStatement)
+            : blockStatement([expressionStatement(expression.body)]);
 }
 
 function MoveToNext(head: IfStatement, current: IfStatement, tail: IfStatement) {
     if (head == null) {
         head = tail = current;
-    }
-    else {
+    } else {
         tail = tail.alternate = current;
     }
-
 }
 
 function HandleDefaultCase(expression: ArrowFunctionExpression, tail: IfStatement) {
-
-    tail.alternate = expression.body.type === "BlockStatement" ?
-        expression.body as BlockStatement :
-        blockStatement([expressionStatement(expression.body)]);
+    tail.alternate =
+        expression.body.type === "BlockStatement"
+            ? (expression.body as BlockStatement)
+            : blockStatement([expressionStatement(expression.body)]);
 }
