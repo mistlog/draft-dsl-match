@@ -1,4 +1,4 @@
-import { isTSUnionType, expressionStatement, blockStatement, Identifier, TypeAnnotation, isTSLiteralType, IfStatement, BlockStatement, StringLiteral, NumberLiteral, isTSTypeReference, ArrowFunctionExpression, ExpressionStatement, isStringLiteral } from "@babel/types";
+import { isTSUnionType, expressionStatement, blockStatement, Identifier, TypeAnnotation, isTSLiteralType, IfStatement, BlockStatement, StringLiteral, NumberLiteral, isTSTypeReference, ArrowFunctionExpression, ExpressionStatement, isStringLiteral, isTSQualifiedName, isIdentifier } from "@babel/types";
 import { ToAst, ToString } from "typedraft";
 
 export class PatternMatch {
@@ -67,9 +67,17 @@ function BuildCurrentIf(expression: ArrowFunctionExpression) {
     }
     else if (isTSTypeReference(annotation)) {
         /**
-         * enum
+         * enum, instanceof
          */
-        current = ToAst(`if(${to_match}===${ToString(annotation)}){}`) as IfStatement;
+
+        let operator = null;
+        if (isTSQualifiedName(annotation.typeName)) {
+            operator = "===";
+        } else if (isIdentifier(annotation.typeName)) {
+            operator = "instanceof";
+        }
+        current = ToAst(`if(${to_match} ${operator} ${ToString(annotation)}){}`) as IfStatement;
+
     }
     else if (isTSUnionType(annotation)) {
         /**
@@ -103,7 +111,6 @@ function MoveToNext(head: IfStatement, current: IfStatement, tail: IfStatement) 
     }
 
 }
-
 
 function HandleDefaultCase(expression: ArrowFunctionExpression, tail: IfStatement) {
 
