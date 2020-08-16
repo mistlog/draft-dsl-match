@@ -1,6 +1,6 @@
 {
     "name": "draft-dsl-match",
-    "version": "0.1.0",
+    "version": "0.0.0-a51d7fe.0",
     "description": "pattern match DSL for typedraft",
     "author": "mistlog",
     "license": "MIT",
@@ -40,17 +40,19 @@
         "clean:dist": "ts-node ./script/clean-dist.ts"
     },
     "dependencies": {
-        "typedraft": "0.2.0"
+        "ts-pattern": "^1.1.0"
     },
     "devDependencies": {
         "@types/jest": "^24.0.18",
         "@types/node": "^12.12.14",
-        "prettier": "^2.0.5",
-        "pretty-quick": "^2.0.1",
+        "draft-dsl-match": "0.0.0-a51d7fe.0",
         "husky": "^4.2.5",
         "jest": "^24.9.0",
+        "prettier": "^2.0.5",
+        "pretty-quick": "^2.0.1",
         "ts-jest": "^24.0.2",
         "ts-node": "^8.3.0",
+        "typedraft": "0.0.0-a6f6456.1",
         "typescript": "^3.8.3"
     },
     "husky": {

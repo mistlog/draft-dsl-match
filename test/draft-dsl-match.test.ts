@@ -1,236 +1,119 @@
-import { LocalContext, ToString, ToBinding, InlineContext, ToNodePath, ToFile } from "typedraft";
-import { BlockStatement, Program } from "@babel/types";
-import traverse, { NodePath } from "@babel/traverse";
+import { NodePath } from "@babel/traverse";
+import { TaggedTemplateExpression, TemplateLiteral } from "@babel/types";
+import { ToAst, ToString } from "typedraft";
+
 import { PatternMatch } from "../src/draft-dsl-match";
 
-describe("test dsl match", () => {
-    test("dsl.match.number", () => {
-        //
-        const code = `
-            function Test(value:number){
-                'use match';
+test("specify input and output type", () => {
+    const dsl = new PatternMatch();
+    const path = GetTemplateLiteralPath(`
+        Λ<number>("match")\`\${value as number}
+            \${2} -> \${30}
+        \`
+        `);
 
-                (value: 1) =>
-                {
-                    console.log(1);
-                }
-            
-                (value: 2) =>
-                {
-                    console.log(2);
-                }
-            
-                (value: 3) =>
-                {
-                    console.log(3);
-                }
-            }
-        `;
-
-        SnapshotTest(code);
-    });
-
-    test("dsl.match.string", () => {
-        //
-        const code = `
-            function Test(value:string){
-                'use match';
-
-                (value: "a") =>
-                {
-                    console.log("a");
-                }
-            
-                (value: "b") =>
-                {
-                    console.log("b");
-                }
-            }
-        `;
-
-        SnapshotTest(code);
-    });
-
-    test("dsl.match.enum", () => {
-        //
-        const code = `
-            function Test(value:Event){
-                'use match';
-
-                (value: Event.EventA) =>
-                {
-                    console.log(1);
-                }
-            
-                (value: Event.EventB) =>
-                {
-                    console.log("a");
-                }
-            }
-        `;
-
-        SnapshotTest(code);
-    });
-
-    test("dsl.match.instanceof", () => {
-        //
-        const code = `
-            function Test(value:ClassA | ClassB){
-                'use match';
-
-                (value: ClassA) =>
-                {
-                    console.log("class A");
-                }
-            
-                (value: ClassB) =>
-                {
-                    console.log("class B");
-                }
-            }
-        `;
-
-        SnapshotTest(code);
-    });
-
-    test("dsl.match.only-default: only default is not allowed", () => {
-        //
-        const code = `
-            function Test(value:number){
-                'use match';
-
-                () =>
-                {
-                    console.log(2);
-                }
-            }
-        `;
-
-        const context = new LocalContext(ToBinding(code));
-        expect(() => context.Resolve(new PatternMatch())).toThrowError(
-            "Cannot set property 'alternate' of null"
-        );
-    });
-
-    test("dsl.match.default", () => {
-        //
-        const code = `
-            function Test(value:number){
-                'use match';
-
-                (value: 1) =>
-                {
-                    console.log(1);
-                }
-            
-                () =>
-                {
-                    console.log(2);
-                }
-            }
-        `;
-
-        SnapshotTest(code);
-    });
-
-    test("dsl.match: return block statement", () => {
-        //
-        const code = `
-            function Test(value:number){
-                'use match';
-
-                (value: 1) => console.log(1);
-            
-                () => <HandleSomething/>;
-            }
-        `;
-
-        SnapshotTest(code);
-    });
-
-    test("dsl.match.or", () => {
-        //
-        const code = `
-            function Test(value:any){
-                'use match';
-
-                (value: "a" | "b") =>
-                {
-                    console.log("string");
-                }
-
-                (value: 1 | 2) =>
-                {
-                    console.log("number");
-                }
-
-                (value: Event.A | Event.B) => 
-                {
-                    console.log("enum");
-                }
-            }
-        `;
-
-        SnapshotTest(code);
-    });
-
-    test("dsl.match.inline-context", () => {
-        const code = `
-            {
-                'use match';
-
-                (value: "a" | "b") => {
-                    console.log("string");
-                }
-
-                (value: 1 | 2) => {
-                    console.log("number");
-                }
-            }
-        `;
-
-        const context = new InlineContext(ToNodePath(code));
-        context.Resolve(new PatternMatch());
-        expect(ToString(context.m_Code)).toMatchSnapshot();
-    });
-
-    test("dsl.match.inline-context: merge", () => {
-        const code = `
-            {
-                'use match';
-
-                (value: "a" | "b") => {
-                    console.log("string");
-                }
-
-                (value: 1 | 2) => {
-                    console.log("number");
-                }
-            }
-        `;
-
-        // ToNodePath returns path without container, key, etc...
-        // however, they will be used in merge(path.replaceWithMultiple)
-        // so we will get real path by traverse:
-        let program_path: NodePath<Program> = null;
-        traverse(ToFile(code), {
-            Program(path) {
-                program_path = path;
-            },
-        });
-        const [path] = program_path.get("body") as [NodePath<BlockStatement>];
-
-        const context = new InlineContext(path);
-        context.Resolve(new PatternMatch(true));
-
-        // path will be invalid after merge, that's fine in typedraft due to RefreshDraftPlugin
-        // so we use program_path.node to check the transcribed code:
-        expect(ToString(program_path.node)).toMatchSnapshot();
-    });
+    const ast = dsl.InplaceTranscribe(path, "number");
+    expect(ToString(ast)).toMatchSnapshot();
 });
 
-function SnapshotTest(code: string) {
-    const context = new LocalContext(ToBinding(code));
-    context.Resolve(new PatternMatch());
-    expect(ToString(context.m_Code)).toMatchSnapshot();
+test("specify only input type", () => {
+    const dsl = new PatternMatch();
+    const path = GetTemplateLiteralPath(`
+            Λ("match")\`\${value as number}
+                \${2} -> \${30}
+        \`;
+    `);
+    const ast = dsl.InplaceTranscribe(path, "");
+    expect(ToString(ast)).toMatchSnapshot();
+});
+
+test("specify factory", () => {
+    const dsl = new PatternMatch({ factory: "match" });
+    const path = GetTemplateLiteralPath(`
+            Λ("match")\`\${value}
+                \${2} -> \${30}
+        \`;
+    `);
+    const ast = dsl.InplaceTranscribe(path, "");
+    expect(ToString(ast)).toMatchSnapshot();
+});
+
+test("use not", () => {
+    const dsl = new PatternMatch();
+    const path = GetTemplateLiteralPath(`
+            Λ("match")\`\${value}
+                \${not(2)} -> \${30}
+        \`;
+    `);
+    const ast = dsl.InplaceTranscribe(path, "");
+    expect(ToString(ast)).toMatchSnapshot();
+});
+
+test("value only", () => {
+    const dsl = new PatternMatch();
+    const path = GetTemplateLiteralPath(`
+        Λ("match")\`\${value}
+            \${2} -> \${30}
+            \${'temp'} -> \${'temp'}
+            \${string_type} -> \${\`value is \${value}\`}
+            \${{ type: 'image' }} -> \${'type is image'}
+    \`
+    `);
+
+    const ast = dsl.InplaceTranscribe(path, "");
+    expect(ToString(ast)).toMatchSnapshot();
+});
+
+test("return object", () => {
+    const dsl = new PatternMatch();
+    const path = GetTemplateLiteralPath(`
+        Λ("match")\`\${value}
+            \${2} -> \${ x =>({ type: 'image' })}
+            \${(value: any) => value === 3} -> \${"number: 3"}
+    \`
+    `);
+
+    const ast = dsl.InplaceTranscribe(path, "");
+    expect(ToString(ast)).toMatchSnapshot();
+});
+test("use expression", () => {
+    const dsl = new PatternMatch();
+    const path = GetTemplateLiteralPath(`
+        Λ("match")\`\${input}
+            \${is3(input)} -> \${'temp'}
+            \${input === 3} -> \${'temp'}
+            \${__} -> \${6}
+    \`;
+    `);
+
+    const ast = dsl.InplaceTranscribe(path, "");
+    expect(ToString(ast)).toMatchSnapshot();
+});
+
+test("use handler", () => {
+    const dsl = new PatternMatch();
+    const path = GetTemplateLiteralPath(`
+            Λ("match")\`\${['get', 2]}
+                \${['get', as('value')]} -> \${(_: any, { value }: any) => value * 2}
+        \`;
+    `);
+    const ast = dsl.InplaceTranscribe(path, "");
+    expect(ToString(ast)).toMatchSnapshot();
+});
+
+test("use handler without param", () => {
+    const dsl = new PatternMatch();
+    const path = GetTemplateLiteralPath(`
+            Λ("match")\`\${value}
+                \${2} -> \${()=>30}
+        \`;
+    `);
+    const ast = dsl.InplaceTranscribe(path, "");
+    expect(ToString(ast)).toMatchSnapshot();
+});
+
+function GetTemplateLiteralPath(code: string) {
+    const path = new NodePath<TemplateLiteral>(null, null);
+    path.node = (ToAst(code).expression as TaggedTemplateExpression).quasi;
+    return path;
 }

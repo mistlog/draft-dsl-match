@@ -1,93 +1,71 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`test dsl match dsl.match.default 1`] = `
-"function Test(value: number) {
-  if (value === 1) {
-    console.log(1);
-  } else {
-    console.log(2);
-  }
-}"
+exports[`return object 1`] = `
+"MatchDSL(value).with(2, x => {
+  return {
+    type: 'image'
+  };
+}).when((value: any) => value === 3, () => {
+  return \\"number: 3\\";
+}).run()"
 `;
 
-exports[`test dsl match dsl.match.enum 1`] = `
-"function Test(value: Event) {
-  if (value === Event.EventA) {
-    console.log(1);
-  } else if (value === Event.EventB) {
-    console.log(\\"a\\");
-  }
-}"
+exports[`specify factory 1`] = `
+"match(value).with(2, () => {
+  return 30;
+}).run()"
 `;
 
-exports[`test dsl match dsl.match.inline-context 1`] = `
-"{
-  if (value === \\"a\\" || value === \\"b\\") {
-    console.log(\\"string\\");
-  } else if (value === 1 || value === 2) {
-    console.log(\\"number\\");
-  }
-}"
+exports[`specify input and output type 1`] = `
+"MatchDSL<number, number>(value).with(2, () => {
+  return 30;
+}).run()"
 `;
 
-exports[`test dsl match dsl.match.inline-context: merge 1`] = `
-"if (value === \\"a\\" || value === \\"b\\") {
-  console.log(\\"string\\");
-} else if (value === 1 || value === 2) {
-  console.log(\\"number\\");
-}"
+exports[`specify only input type 1`] = `
+"MatchDSL<number>(value).with(2, () => {
+  return 30;
+}).run()"
 `;
 
-exports[`test dsl match dsl.match.instanceof 1`] = `
-"function Test(value: ClassA | ClassB) {
-  if (value instanceof ClassA) {
-    console.log(\\"class A\\");
-  } else if (value instanceof ClassB) {
-    console.log(\\"class B\\");
-  }
-}"
+exports[`use expression 1`] = `
+"MatchDSL(input).when(() => {
+  return is3(input);
+}, () => {
+  return 'temp';
+}).when(() => {
+  return input === 3;
+}, () => {
+  return 'temp';
+}).with(__, () => {
+  return 6;
+}).run()"
 `;
 
-exports[`test dsl match dsl.match.number 1`] = `
-"function Test(value: number) {
-  if (value === 1) {
-    console.log(1);
-  } else if (value === 2) {
-    console.log(2);
-  } else if (value === 3) {
-    console.log(3);
-  }
-}"
+exports[`use handler 1`] = `
+"MatchDSL(['get', 2]).with(['get', as('value')], (_: any, {
+  value
+}: any) => value * 2).run()"
 `;
 
-exports[`test dsl match dsl.match.or 1`] = `
-"function Test(value: any) {
-  if (value === \\"a\\" || value === \\"b\\") {
-    console.log(\\"string\\");
-  } else if (value === 1 || value === 2) {
-    console.log(\\"number\\");
-  } else if (value === Event.A || value === Event.B) {
-    console.log(\\"enum\\");
-  }
-}"
+exports[`use handler without param 1`] = `"MatchDSL(value).with(2, () => 30).run()"`;
+
+exports[`use not 1`] = `
+"MatchDSL(value).with(not(2), () => {
+  return 30;
+}).run()"
 `;
 
-exports[`test dsl match dsl.match.string 1`] = `
-"function Test(value: string) {
-  if (value === \\"a\\") {
-    console.log(\\"a\\");
-  } else if (value === \\"b\\") {
-    console.log(\\"b\\");
-  }
-}"
-`;
-
-exports[`test dsl match dsl.match: return block statement 1`] = `
-"function Test(value: number) {
-  if (value === 1) {
-    console.log(1);
-  } else {
-    <HandleSomething />;
-  }
-}"
+exports[`value only 1`] = `
+"MatchDSL(value).with(2, () => {
+  return 30;
+}).with('temp', () => {
+  return 'temp';
+}).with(string_type, () => {
+  return \`value is \${value}\`;
+}).with({
+  type: 'image'
+}, () => {
+  return 'type is image';
+}).run()"
 `;
