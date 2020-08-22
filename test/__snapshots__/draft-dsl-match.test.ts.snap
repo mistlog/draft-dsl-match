@@ -36,7 +36,9 @@ exports[`use expression 1`] = `
 }).when(() => {
   return input === 3;
 }, () => {
-  return 'temp';
+  return {
+    key: 'temp'
+  };
 }).with(__, () => {
   return 6;
 }).run()"

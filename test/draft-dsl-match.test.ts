@@ -1,7 +1,6 @@
 import { NodePath } from "@babel/traverse";
 import { TaggedTemplateExpression, TemplateLiteral } from "@babel/types";
 import { ToAst, ToString } from "typedraft";
-
 import { PatternMatch } from "../src/draft-dsl-match";
 
 test("specify input and output type", () => {
@@ -81,7 +80,7 @@ test("use expression", () => {
     const path = GetTemplateLiteralPath(`
         Λ("match")\`\${input}
             \${is3(input)} -> \${'temp'}
-            \${input === 3} -> \${'temp'}
+            \${input === 3} -> \${{key:'temp'}}
             \${__} -> \${6}
     \`;
     `);
