@@ -111,8 +111,8 @@ function AppendWithAndWhen(
     `;
 
     /**
-     * by default, if handler is value, wrap it with "()" to be object expression
-     * eg. transform ${{value:2}} to ()=>({value:2})
+     * by default, if handler is value, convert it to { return ...; }
+     *  eg. transform ${{value:2}} to ()=>{ return {value:2}; }
      *
      * if handler is function, pay attention to the return object in the same way:
      */
@@ -165,12 +165,11 @@ function AppendWithAndWhen(
 
 /**
  * # Utility
- */
-
-/**
+ *
  * convert <expression> to () => { return <expression>; }
- * in order to deal with return object uniforml: eg. () => ({value:1})
- * after transformation, "()" around "{value:1}" will lost:
+ * in order to deal with object literal as return value uniformly
+ *  eg. () => ({value:1})
+ *      after transformation, "()" around "{value:1}" will lost, so we convert it to () => { return { value: 1 }; }
  */
 const WrapAsArrowFunctionExpression = (expression: Expression) =>
     arrowFunctionExpression([], blockStatement([returnStatement(expression)]));
