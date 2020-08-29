@@ -5,3 +5,4 @@ build
 dist
 *.tgz
 src/*.ts
+./src/ts-pattern.test.ts

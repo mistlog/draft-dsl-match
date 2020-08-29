@@ -7,10 +7,6 @@
         "declaration": true,
         "jsx": "preserve"
     },
-    "include": [
-        "src/**/*.ts"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules", "./src/ts-pattern.test.ts"]
 }
