@@ -17,9 +17,10 @@ import {
 } from "@babel/types";
 
 import { ToAst as ast } from "typedraft";
-import { __, MatchDSL, not } from "draft-dsl-match";
 
-export { __, match as MatchDSL, when, not, select as use } from "ts-pattern";
+import { __, match as MatchDSL, when, not, select as use } from "ts-pattern";
+export { MatchDSL, __, when, not, use };
+
 export const String = __.string;
 export const Number = __.number;
 export const Boolean = __.boolean;
@@ -96,18 +97,18 @@ function AppendWithAndWhen(
      * arg1 can be predicate when method is "when", or pattern when method is "with"
      */
     // prettier-ignore
-    const { predicate, pattern, method } = Λ<{pattern?: Expression, predicate?: ArrowFunctionExpression, method:Identifier}>('match')` ${arg1 as Expression}
-        ${{type: "CallExpression", callee: { name: not("not") }}} -> ${{ 
+    const { predicate, pattern, method } = Λ<{ pattern?: Expression, predicate?: ArrowFunctionExpression, method: Identifier }>('match')` ${arg1 as Expression}
+        ${{ type: "CallExpression", callee: { name: not("not") } }} -> ${{
             predicate: WrapAsArrowFunctionExpression(arg1), method: identifier("when")
         }}
 
-        ${["BinaryExpression","LogicalExpression"].includes(arg1.type)} -> ${{ 
+        ${["BinaryExpression", "LogicalExpression"].includes(arg1.type)} -> ${{
             predicate: WrapAsArrowFunctionExpression(arg1), method: identifier("when")
         }}
 
-        ${{type: "ArrowFunctionExpression"}} -> ${{ predicate: arg1 as ArrowFunctionExpression, method: identifier("when")}}
+        ${{ type: "ArrowFunctionExpression" }} -> ${{ predicate: arg1 as ArrowFunctionExpression, method: identifier("when") }}
 
-        ${__} -> ${{pattern: arg1, method: identifier("with")}}
+        ${__} -> ${{ pattern: arg1, method: identifier("with") }}
     `;
 
     /**
@@ -118,13 +119,13 @@ function AppendWithAndWhen(
      */
     // prettier-ignore
     const _handler = Λ<ArrowFunctionExpression>("match")` ${handler}
-        ${{ type: "ArrowFunctionExpression", body: { extra: { parenthesized: true } } }} -> ${()=>{
+        ${{ type: "ArrowFunctionExpression", body: { extra: { parenthesized: true } } }} -> ${() => {
             const _handler = WrapAsArrowFunctionExpression(handler.body as Expression);
             _handler.params = handler.params;
             return _handler;
         }}
 
-        ${{ type: "ArrowFunctionExpression"}} -> ${handler}
+        ${{ type: "ArrowFunctionExpression" }} -> ${handler}
 
         ${__} -> ${WrapAsArrowFunctionExpression(handler)}
     `;
